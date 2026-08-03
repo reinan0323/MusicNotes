@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Music Notes</title>
+</head>
+<body>
+  <h1>Testing connection...</h1>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseUrl = "https://yrkoxnxzvrhwzmhcqnsq.supabase.co";
+    const supabaseKey = "sb_publishable_wLmrCX0JfUS2if7niX0w2g_woIYwLMz";
+    const client = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    async function testConnection() {
+      const { data, error } = await client
+        .from('pieces')
+        .select('*')
+        .limit(5);
+
+      console.log('Data:', data);
+      console.log('Error:', error);
+    }
+
+    testConnection();
+  </script>
+</body>
+</html>
