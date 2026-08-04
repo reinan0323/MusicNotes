@@ -2,45 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Music Notes - Ether Gacha</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 0 20px;
-      line-height: 1.6;
-    }
-    .card {
-      border: 1px solid #ccc;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    textarea {
-      width: 100%;
-      height: 100px;
-      margin-top: 8px;
-      margin-bottom: 15px;
-      box-sizing: border-box;
-    }
-    select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 8px;
-      margin-bottom: 15px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #gacha-result {
-      background-color: #f9f9f9;
-      border-left: 4px solid #4CAF50;
-      display: none; /* Hidden until user submits */
-    }
-  </style>
+  
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -68,103 +33,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const supabaseUrl = "https://yrkoxnxzvrhwzmhcqnsq.supabase.co";
-    const supabaseKey = "sb_publishable_wLmrCX0JfUS2if7niX0w2g_woIYwLMz";
-    const client = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-    // 1. Fetch pieces from Supabase when the page loads to fill the dropdown menu
-    async function loadPieces() {
-      const { data: pieces, error } = await client
-        .from('pieces')
-        .select('*');
-
-      if (error) {
-        console.error('Error loading pieces:', error);
-        return;
-      }
-
-      const selectElement = document.getElementById('piece-select');
-      selectElement.innerHTML = '<option value="">-- Select a Piece --</option>';
-
-      pieces.forEach(piece => {
-        const option = document.createElement('option');
-        option.value = piece.id; // stores the piece_id
-        option.textContent = `${piece.composer_name} - ${piece.work_title}`;
-        selectElement.appendChild(option);
-      });
-    }
-
-    // 2. Handle Submitting a Note & Getting a Random Note back
-    async function submitNote() {
-      const pieceId = document.getElementById('piece-select').value;
-      const noteText = document.getElementById('note-text').value.trim();
-
-      if (!pieceId || !noteText) {
-        alert("Please select a piece and write a note before sending!");
-        return;
-      }
-
-      // Disable button while sending
-      const submitBtn = document.getElementById('submit-btn');
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Sending into the ether...";
-
-      // Step A: Insert user's note into the 'notes' table
-      const { error: insertError } = await client
-        .from('notes')
-        .insert([
-          { piece_id: pieceId, note_text: noteText }
-        ]);
-
-      if (insertError) {
-        console.error('Error submitting note:', insertError);
-        alert('Could not send note into the ether: ' + insertError.message);
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Send into Ether & Receive a Note";
-        return;
-      }
-
-      // Step B: Fetch a random note from the 'notes' table along with its piece details
-      await getRandomNote();
-
-      // Reset form fields
-      document.getElementById('piece-select').value = "";
-      document.getElementById('note-text').value = "";
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Send into Ether & Receive a Note";
-    }
-
-    // 3. Get a random note from the database
-    async function getRandomNote() {
-      // Fetch notes joined with piece information
-      const { data: notes, error } = await client
-        .from('notes')
-        .select(`
-          note_text,
-          pieces ( composer_name, work_title )
-        `);
-
-      if (error || !notes || notes.length === 0) {
-        console.error('Error fetching random note:', error);
-        return;
-      }
-
-      // Pick one note at random from the returned array
-      const randomIndex = Math.floor(Math.random() * notes.length);
-      const randomNote = notes[randomIndex];
-
-      // Display the result on the webpage
-      document.getElementById('received-piece').textContent = 
-        `${randomNote.pieces.composer_name} - ${randomNote.pieces.work_title}`;
-      document.getElementById('received-text').textContent = randomNote.note_text;
-      
-      // Reveal the result card
-      document.getElementById('gacha-result').style.display = "block";
-    }
-
-    // Initialize dropdown on load
-    loadPieces();
-  </script>
+  
+  <script src="app.js"></script>
 </body>
 </html>
