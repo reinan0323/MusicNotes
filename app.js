@@ -3,35 +3,92 @@ const supabaseUrl = "https://yrkoxnxzvrhwzmhcqnsq.supabase.co";
 const supabaseKey = "sb_publishable_wLmrCX0JfUS2if7niX0w2g_woIYwLMz";
 const client = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// Load music pieces into the select dropdown
-async function loadPieces() {
-  const { data: pieces, error } = await client
-    .from('pieces')
-    .select('*');
+let currentSearchResults = [];
+let selectedPieceId = null;
 
-  if (error) {
+// Debounce helper
+function debounce(func, delay = 300) {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+}
+
+// 1. Fetch search results from Supabase & populate datalist
+async function searchPieces(searchTerm) {
+  const datalistElement = document.getElementById('piece-options');
+  const inputElement = document.getElementById('piece-input');
+
+  if (!searchTerm || searchTerm.trim().length < 2) {
+    if (datalistElement) datalistElement.innerHTML = '';
+    currentSearchResults = [];
+    selectedPieceId = null;
+    return;
+  }
+
+  // 1. Replace punctuation (periods, commas, dashes) with spaces
+  // "rachmaninoff piano concerto no.2" -> "rachmaninoff piano concerto no 2"
+  const cleanTerm = searchTerm.replace(/[.,\-\/#!$%\^&\*;:{}=\-_`~()]/g, " ");
+
+  // 2. Split into words and filter out empty strings
+  const words = cleanTerm.trim().split(/\s+/).filter(w => w.length > 0);
+
+  if (words.length === 0) return;
+
+  // 3. Build multi-word query
+  let query = client.from('pieces').select('id, composer_name, work_title');
+
+  words.forEach(word => {
+    // Escape double quotes to prevent SQL syntax errors
+    const safeWord = word.replace(/"/g, '""');
+    query = query.or(`composer_name.ilike."%${safeWord}%",work_title.ilike."%${safeWord}%"`);
+  });
+
+  const { data: pieces, error } = await query.limit(20);
+
+  if (error || !pieces) {
     console.error('Error loading pieces:', error);
     return;
   }
 
-  const selectElement = document.getElementById('piece-select');
-  selectElement.innerHTML = '<option value="">-- Select a Piece --</option>';
+  currentSearchResults = pieces;
+  datalistElement.innerHTML = '';
 
   pieces.forEach(piece => {
     const option = document.createElement('option');
-    option.value = piece.id;
-    option.textContent = `${piece.composer_name} - ${piece.work_title}`;
-    selectElement.appendChild(option);
+    option.value = `${piece.composer_name} - ${piece.work_title}`;
+    datalistElement.appendChild(option);
   });
+
+  // Verify match in case full text was selected/typed
+  checkMatch(inputElement.value);
 }
 
-// Handle submitting a note and triggering the gacha pull
-async function submitNote() {
-  const pieceId = document.getElementById('piece-select').value;
-  const noteText = document.getElementById('note-text').value.trim();
+// 2. Check typed text against stored search results to set selectedPieceId
+function checkMatch(inputValue) {
+  const currentText = inputValue.trim();
+  const match = currentSearchResults.find(
+    p => `${p.composer_name} - ${p.work_title}` === currentText
+  );
 
-  if (!pieceId || !noteText) {
-    alert("Please select a piece and write a note before sending!");
+  selectedPieceId = match ? match.id : null;
+}
+
+// 3. Submit Note
+async function submitNote() {
+  const inputElement = document.getElementById('piece-input');
+  const noteTextElement = document.getElementById('note-text');
+
+  // Final check right before submitting
+  if (!selectedPieceId) {
+    checkMatch(inputElement.value);
+  }
+
+  const noteText = noteTextElement.value.trim();
+
+  if (!selectedPieceId || !noteText) {
+    alert("Please select a piece from the suggestions list and write a note!");
     return;
   }
 
@@ -39,32 +96,32 @@ async function submitNote() {
   submitBtn.disabled = true;
   submitBtn.textContent = "Sending into the ether...";
 
-  // Save user note to database
   const { error: insertError } = await client
     .from('notes')
-    .insert([
-      { piece_id: pieceId, note_text: noteText }
-    ]);
+    .insert([{ piece_id: selectedPieceId, note_text: noteText }]);
 
   if (insertError) {
     console.error('Error submitting note:', insertError);
-    alert('Could not send note into the ether: ' + insertError.message);
+    alert('Could not send note: ' + insertError.message);
     submitBtn.disabled = false;
     submitBtn.textContent = "Send into Ether & Receive a Note";
     return;
   }
 
-  // Fetch a random note from someone else
   await getRandomNote();
 
-  // Reset inputs
-  document.getElementById('piece-select').value = "";
-  document.getElementById('note-text').value = "";
+  // Clean reset of input, state, and rendered datalist
+  inputElement.value = "";
+  noteTextElement.value = "";
+  selectedPieceId = null;
+  currentSearchResults = [];
+  document.getElementById('piece-options').innerHTML = "";
+
   submitBtn.disabled = false;
   submitBtn.textContent = "Send into Ether & Receive a Note";
 }
 
-// Fetch a random note from the database
+// 4. Fetch random note
 async function getRandomNote() {
   const { data: notes, error } = await client
     .from('notes')
@@ -88,5 +145,14 @@ async function getRandomNote() {
   document.getElementById('gacha-result').style.display = "block";
 }
 
-// Initialize on page load
-loadPieces();
+// Initialize event listeners safely after DOM loads
+document.addEventListener('DOMContentLoaded', () => {
+  const inputElement = document.getElementById('piece-input');
+
+  // Debounced API call as user types
+  const debouncedSearch = debounce((e) => searchPieces(e.target.value), 300);
+  inputElement.addEventListener('input', debouncedSearch);
+
+  // Instant ID lock when user clicks an option from the datalist dropdown
+  inputElement.addEventListener('change', (e) => checkMatch(e.target.value));
+});
