@@ -2,22 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="author" content="Rei by Poetic Pasta">
+  <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Music Notes - Ether Gacha</title>
+  <title>Music Notes</title>
   
   <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
 
-  <h1>🎵 Music Notes in the Ether</h1>
+  <h1>🎵 Music Notes</h1>
 
   <div class="card">
     <h2>1. Send a Note into the Ether</h2>
-    
-    <label for="piece-select">Choose a piece of music:</label>
-    <select id="piece-select">
-      <option value="">Loading music pieces...</option>
-    </select>
+    <label for="piece-input">Search for your favorite piece of music:</label>
+    <input type="text" id="piece-input" list="piece-options" placeholder="Search composer or piece..." autocomplete="off" />
+    <datalist id="piece-options"></datalist>
 
     <label for="note-text">Share a memory or feeling associated with it:</label>
     <textarea id="note-text" placeholder="I remember listening to this when..."></textarea>
@@ -32,8 +35,5 @@
     <blockquote id="received-text">"..."</blockquote>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
-  <script src="app.js"></script>
 </body>
 </html>
