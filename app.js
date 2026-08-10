@@ -63,6 +63,8 @@ async function searchPieces(searchTerm) {
 
   // Verify match in case full text was selected/typed
   checkMatch(inputElement.value);
+  // Verify match in case full text was selected/typed
+  checkMatch(inputElement.value);
 }
 
 // 2. Check typed text against stored search results to set selectedPieceId
