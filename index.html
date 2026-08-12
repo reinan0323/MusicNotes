@@ -16,7 +16,9 @@
 
   <h1>🎵 Music Notes</h1>
 
-  <div class="card">
+  <!-- STATE A: Gate View -->
+
+  <div id="gate-view" class="card">
     <h2>1. Send a Note into the Ether</h2>
     <label for="piece-input">Search for your favorite piece of music:</label>
     <input type="text" id="piece-input" list="piece-options" placeholder="Search composer or piece..." autocomplete="off" />
@@ -25,14 +27,33 @@
     <label for="note-text">Share a memory or feeling associated with it:</label>
     <textarea id="note-text" placeholder="I remember listening to this when..."></textarea>
 
-    <button id="submit-btn" onclick="submitNote()">Send into Ether & Receive a Note</button>
+    <button id="submit-btn">Send into Ether & Receive a Note</button>
+    
+    <p><a href="#" id="skip-link">Just want to read? Enter without sending a note.</a></p>
+
   </div>
 
-  <div id="gacha-result" class="card">
-    <h2>2. You Received a Note from a Stranger!</h2>
+  <!-- STATE B: Sending Animation -->
+  <div id="sending-view" class="card" style="display: none;">
+    <p>Sending your note into the ether...</p>
+  </div>
+
+  <!-- STATE C: The Ether Field -->
+  <div id="ether-view" style="display: none;">
+    <div id="filters"></div>
+    <p>this is the ether view.</p>
+    <div id="field" style="position: relative; height: 300px;"></div>
+    <button id="add-note-btn">Add another note</button>
+  </div>
+
+  <!-- Reveal card overlay -->
+  <div id="gacha-reveal" class="card" style="display: none;">
+    <h2>2. You Caught a Note from a Stranger!</h2>
     <p><strong>Music Piece:</strong> <span id="received-piece">...</span></p>
     <p><strong>Their Note:</strong></p>
     <blockquote id="received-text">"..."</blockquote>
+    <button id="close-reveal-btn">Back to the ether</button>
+
   </div>
 
 </body>
