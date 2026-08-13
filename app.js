@@ -14,7 +14,9 @@ let currentNoteId = null;
 // State swapping
 function showState(stateId) {
   const allStates = ['gate-view', 'sending-view','ether-view','gacha-reveal'];
-
+  if (stateId === 'ether-view'){
+    renderField();
+  }
   // Loop through all the state/divs
   for (const id of allStates){
     const element = document.getElementById(id)
@@ -24,6 +26,8 @@ function showState(stateId) {
     } else {
       element.style.display = 'none';
     }
+
+
   }
 }
 
@@ -43,7 +47,30 @@ function debounce(func, delay = 300) {
   };
 }
 
-// 1. Fetch search results from Supabase & populate datalist
+
+// Dots in the ether
+function renderField(count = 8) {
+  const fieldEl = document.getElementById('field');
+  fieldEl.innerHTML = '';
+
+  for (let i = 0; i < count; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'note-dot';
+    dot.style.left = Math.random() * 90 + '%';
+    dot.style.top = Math.random() * 90 + '%';
+
+    dot.addEventListener('click', () => catchNote(dot));
+
+    fieldEl.appendChild(dot);
+  }
+}
+
+function catchNote(dotElement) {
+  console.log('caught a dot!', dotElement);
+  // real fetch-and-reveal logic comes next
+}
+
+// Fetch search results from Supabase & populate datalist
 async function searchPieces(searchTerm) {
   const datalistElement = document.getElementById('piece-options');
   const inputElement = document.getElementById('piece-input');
@@ -210,9 +237,9 @@ document.addEventListener('DOMContentLoaded', () => {
   inputElement.addEventListener('change', (e) => checkMatch(e.target.value));
 
 
-  // submit note btn
-  document.getElementById('submit-btn').addEventListener('click', () => {
-    submitNote();
+  // submit note btn (async/await because getRandomNote is called within submitNote; showState could show blank due to race conditions)
+  document.getElementById('submit-btn').addEventListener('click', async () => {
+    await submitNote();
     showState('gacha-reveal');
   });
 

@@ -57,3 +57,13 @@ body {
     border-left: 4px solid #4CAF50;
     display: none; /* Hidden until user submits */
   }
+
+
+  .note-dot {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background-color: #4CAF50;
+    cursor: pointer;
+  }
