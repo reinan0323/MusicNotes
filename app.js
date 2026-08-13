@@ -6,7 +6,7 @@ const client = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 let currentSearchResults = [];
 let selectedPieceId = null;
-let currentNoteId = null;
+let excludedIds = [];
 
 
 
@@ -59,15 +59,26 @@ function renderField(count = 8) {
     dot.style.left = Math.random() * 90 + '%';
     dot.style.top = Math.random() * 90 + '%';
 
+    dot.style.setProperty('--dx', (Math.random() * 40 + 20) + 'px');
+    dot.style.setProperty('--dy', (Math.random() * 40 - 20) + 'px');
+    dot.style.setProperty('--duration', (Math.random() * 6 + 8) + 's');
+
     dot.addEventListener('click', () => catchNote(dot));
 
     fieldEl.appendChild(dot);
   }
 }
 
-function catchNote(dotElement) {
+async function catchNote(dotElement) {
   console.log('caught a dot!', dotElement);
   // real fetch-and-reveal logic comes next
+  const found = await getRandomNote();
+  if (found){
+    showState('gacha-reveal');
+  } else{
+    alert("You've caught every note in the ether right now; come back later or add one yourself.");
+  }
+  
 }
 
 // Fetch search results from Supabase & populate datalist
@@ -173,18 +184,17 @@ async function submitNote() {
     return;
   }
 
-  // Update global
-  currentNoteId = insertedNote[0].id;
+  // Update global (append current note id into excluded Ids array)
+  excludedIds.push(insertedNote[0].id);
 
   // Browser stores info that user has submitted note; persists across sessions.
   localStorage.setItem('etherUnlocked', 'true');
 
-  await getRandomNote();
+  // await getRandomNote();
 
   // Clean reset of user search/note input, globals, and datalist
   inputElement.value = "";
   noteTextElement.value = "";
-  currentNoteId = null;
   selectedPieceId = null;
   currentSearchResults = [];
   document.getElementById('piece-options').innerHTML = "";
@@ -197,14 +207,17 @@ async function submitNote() {
 async function getRandomNote() {
   // .rpc calls function that was declared on supabase side, which returns one random note.
   // e.g. [{ id:..., note_text: ..., composer_name: ..., work_title: ... }]
-  const { data: data, error } = await client.rpc('get_random_note', {exclude_id: currentNoteId});
+  const { data: data, error } = await client.rpc('get_random_note', {exclude_ids: excludedIds});
 
   if (error || !data || data.length === 0) {
     console.error('Error fetching random note:', error);
-    return;
+    return false;
   }
 
   const randomNote = data[0];
+
+  // Update global of excluded Ids
+  excludedIds.push(randomNote.id);
 
   // Populate display with retrieved note info
   document.getElementById('received-piece').textContent = 
@@ -213,6 +226,8 @@ async function getRandomNote() {
   
   // Show gacha-reveal element
   document.getElementById('gacha-reveal').style.display = "block";
+
+  return true;
 }
 
 // Initialize event listeners safely after DOM loads
@@ -227,6 +242,16 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     showState('gate-view');
   }
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
   // piece search user input
   const inputElement = document.getElementById('piece-input');

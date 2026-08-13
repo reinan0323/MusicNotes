@@ -59,11 +59,19 @@ body {
   }
 
 
+
+
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(var(--dx), var(--dy)); }
+  }
+  
   .note-dot {
     position: absolute;
-    width: 15px;
-    height: 15px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background-color: #4CAF50;
     cursor: pointer;
+    animation: drift var(--duration) ease-in-out infinite;
   }
