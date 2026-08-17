@@ -11,6 +11,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="app.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/profanity-cleaner@latest" defer></script>
 </head>
 <body>
 
@@ -36,11 +37,19 @@
   <!-- STATE B: Sending Animation -->
   <div id="sending-view" class="card" style="display: none;">
     <p>Sending your note into the ether...</p>
+    <button id="skip-send-animation-btn">Skip Animation</button>
   </div>
 
   <!-- STATE C: The Ether Field -->
   <div id="ether-view" style="display: none;">
-    <div id="filters"></div>
+    <div id="filters">
+      <input type="checkbox" id="show-my-notes-checkbox">
+      <label for="show-my-notes-checkbox">Show my notes.</label></br>
+      <label for="composer-filter-input">Filter by composer:</label>
+      <input type="text" id="composer-filter-input" list="composer-options" placeholder="e.g. Rachmaninoff" autocomplete="off" />
+      <datalist id="composer-options"></datalist>
+      <!-- <button id="clear-filter-btn">Clear filter</button> -->
+    </div>
     <p>this is the ether view.</p>
     <div id="field" style="position: relative; height: 300px;"></div>
     <button id="add-note-btn">Add another note</button>

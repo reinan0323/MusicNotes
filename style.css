@@ -61,17 +61,36 @@ body {
 
 
 
+/* Oscillating between two points animation */
   @keyframes drift {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(var(--dx), var(--dy)); }
+    0%, 100% { transform: translate(0, 0) scale(0.3); }
+    50% { transform: translate(var(--dx), var(--dy)) scale(0.3); }
   }
+  
+  @keyframes drift-across {
+    from { transform: translateX(0) scale(0.3); }
+    to   { transform: translateX(var(--drift-distance)) scale(0.3); }
+  }
+
+  @keyframes flip-frames {
+    from { background-position: 0 0; }
+    to { background-position: -425px 0; }
+  }
+
+
+
+  
   
   .note-dot {
     position: absolute;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background-color: #4CAF50;
+    left: -150px;
+    top: var(--top-pos);
+    width: 141px;
+    height: 172px;
+    background-image: url('assets/redquarter.png');
+    background-repeat: no-repeat;
     cursor: pointer;
-    animation: drift var(--duration) ease-in-out infinite;
+    animation:
+      drift-across var(--duration) linear infinite,
+      flip-frames 0.9s steps(3) infinite;
   }

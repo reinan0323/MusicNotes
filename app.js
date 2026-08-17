@@ -6,8 +6,14 @@ const client = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 let currentSearchResults = [];
 let selectedPieceId = null;
+
+// exclude the note that user *just* sent, and account for ether filter
 let excludedIds = [];
 
+let currentComposerResults = [];
+let filterComposer = null;
+
+let myNoteIds = [];
 
 
 
@@ -49,19 +55,33 @@ function debounce(func, delay = 300) {
 
 
 // Dots in the ether
-function renderField(count = 8) {
+function renderField(count = 15) {
   const fieldEl = document.getElementById('field');
+  const fieldWidth = fieldEl.offsetWidth;
   fieldEl.innerHTML = '';
 
   for (let i = 0; i < count; i++) {
     const dot = document.createElement('div');
     dot.className = 'note-dot';
-    dot.style.left = Math.random() * 90 + '%';
+    // dot.style.left = Math.random() * 90 + '%';
     dot.style.top = Math.random() * 90 + '%';
+    
 
-    dot.style.setProperty('--dx', (Math.random() * 40 + 20) + 'px');
-    dot.style.setProperty('--dy', (Math.random() * 40 - 20) + 'px');
-    dot.style.setProperty('--duration', (Math.random() * 6 + 8) + 's');
+    const colors = ['red','orange','yellow','green','blue','purple','pink']
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    const musicNotation = 'quarter';
+    dot.style.backgroundImage = `url('assets/${randomColor}${musicNotation}.png')`;
+
+    dot.style.setProperty('--dx', (Math.random() * 200 - 100) + 'px');
+    dot.style.setProperty('--dy', (Math.random() * 200 - 100) + 'px');
+    dot.style.setProperty('--top-pos', Math.random() * 80 + '%');
+    dot.style.setProperty('--duration', (Math.random() * 6 + 30) + 's');
+    dot.style.setProperty('--drift-distance', (fieldWidth + 800) + 'px');
+
+    const duration = parseFloat(dot.style.getPropertyValue('--duration'));
+    dot.style.animationDelay = `-${Math.random() * duration}s`;
+
+    
 
     dot.addEventListener('click', () => catchNote(dot));
 
@@ -80,6 +100,8 @@ async function catchNote(dotElement) {
   }
   
 }
+
+
 
 // Fetch search results from Supabase & populate datalist
 async function searchPieces(searchTerm) {
@@ -155,6 +177,7 @@ async function submitNote() {
   const inputElement = document.getElementById('piece-input');
   const noteTextElement = document.getElementById('note-text');
 
+
   // Final check right before submitting
   if (!selectedPieceId) {
     checkMatch(inputElement.value);
@@ -162,10 +185,25 @@ async function submitNote() {
 
   const noteText = noteTextElement.value.trim();
 
+  // Error if no piece or note content
   if (!selectedPieceId || !noteText) {
     alert("Please select a piece from the suggestions list and write a note!");
     return;
   }
+
+  // Content moderation
+  const cleanedText = await profanityCleaner.clean(noteText);
+  if (cleanedText !== noteText) {
+    alert("Please remove inappropriate language from your note!");
+    // Clean reset of user search/note input, globals, and datalist
+    inputElement.value = "";
+    noteTextElement.value = "";
+    selectedPieceId = null;
+    currentSearchResults = [];
+    document.getElementById('piece-options').innerHTML = "";
+    return;
+  }
+
 
   const submitBtn = document.getElementById('submit-btn');
   submitBtn.disabled = true;
@@ -184,8 +222,12 @@ async function submitNote() {
     return;
   }
 
-  // Update global (append current note id into excluded Ids array)
+  // Update globals (append current note id into excludedIds array)
   excludedIds.push(insertedNote[0].id);
+
+  myNoteIds.push(insertedNote[0].id);
+  localStorage.setItem('myNoteIds', JSON.stringify(myNoteIds));
+
 
   // Browser stores info that user has submitted note; persists across sessions.
   localStorage.setItem('etherUnlocked', 'true');
@@ -201,13 +243,76 @@ async function submitNote() {
 
   submitBtn.disabled = false;
   submitBtn.textContent = "Send into Ether & Receive a Note";
+
+  showState('sending-view');
 }
+
+
+
+
+// Filter ether dots by composer name
+async function searchComposers(searchTerm){
+  const datalistElement = document.getElementById('composer-options');
+
+  if (!searchTerm || searchTerm.trim().length < 2){
+    if (datalistElement) {
+      datalistElement.innerHTML = '';
+    }
+    currentComposerResults = [];
+    filterComposer = null;
+    return;
+  }
+
+  // Fetch composers from supabase (searchTerm 'ach' returns [{composer_name: 'rachmaninoff'}, {composer_name: 'bach'}] etc.)
+  const { data, error } = await client.rpc('search_composers', { search_term: searchTerm.trim()});
+
+  if (error || !data){
+    console.error('Error searching composers: ', error);
+    return;
+  }
+
+  // .map loops through each item (row) in data (array) begetting ['bach','rachmaninoff']
+  currentComposerResults = data.map(row => row.composer_name);
+  datalistElement.innerHTML = '';
+
+  // For each composer name, populate dropdown list
+  currentComposerResults.forEach(name => {
+    const option = document.createElement('option');
+    option.value = name;
+    datalistElement.appendChild(option);
+  });
+
+}
+
+// called when user clicks off of input field
+function checkComposerMatch(inputValue){
+  const currentText = inputValue.trim();
+  // Assign global var
+  filterComposer = currentComposerResults.includes(currentText) ? currentText : null;
+}
+
+
+
+
+
 
 // Fetch random note
 async function getRandomNote() {
+
+  // Only pass the myNotesId array when the checkbox is checked
+  const checkboxElement = document.getElementById('show-my-notes-checkbox');
+  const noteIdsToInclude = checkboxElement.checked ? myNoteIds : [];
+
+
   // .rpc calls function that was declared on supabase side, which returns one random note.
   // e.g. [{ id:..., note_text: ..., composer_name: ..., work_title: ... }]
-  const { data: data, error } = await client.rpc('get_random_note', {exclude_ids: excludedIds});
+
+  const { data: data, error } = await client.rpc('get_random_note', {
+    exclude_ids: excludedIds,
+    my_notes_ids: noteIdsToInclude,
+    filter_composer: filterComposer
+  });
+
 
   if (error || !data || data.length === 0) {
     console.error('Error fetching random note:', error);
@@ -230,6 +335,13 @@ async function getRandomNote() {
   return true;
 }
 
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // Initialize event listeners safely after DOM loads
 // .addEventListner('eventName', funcToExecuteOnEvent)
 document.addEventListener('DOMContentLoaded', () => {
@@ -239,21 +351,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (hasUnlocked) {
     showState('ether-view');
+    myNoteIds = JSON.parse(localStorage.getItem('myNoteIds')) || [];
   } else {
     showState('gate-view');
   }
 
 
 
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-  // piece search user input
+  // Gate view piece search user input
   const inputElement = document.getElementById('piece-input');
   // Listen for user input, debounce so requests aren't overloaded
   const debouncedSearch = debounce((e) => searchPieces(e.target.value), 300);
@@ -262,11 +367,32 @@ document.addEventListener('DOMContentLoaded', () => {
   inputElement.addEventListener('change', (e) => checkMatch(e.target.value));
 
 
+  // Ether view composer filter input
+  const composerInput = document.getElementById('composer-filter-input');
+  const debouncedComposerSearch = debounce((e) => searchComposers(e.target.value), 300);
+  composerInput.addEventListener('input', debouncedComposerSearch);
+  composerInput.addEventListener('change', (e) => checkComposerMatch(e.target.value));
+
+  composerInput.addEventListener('blur', () => {
+  checkComposerMatch(composerInput.value);
+  if (!filterComposer) {
+    composerInput.value = '';
+  }
+});
+  // document.getElementById('clear-filter-btn').addEventListener('click', () => {
+  //   filterComposer = null;
+  //   composerInput.value = '';
+  // });
+
+
+
   // submit note btn (async/await because getRandomNote is called within submitNote; showState could show blank due to race conditions)
   document.getElementById('submit-btn').addEventListener('click', async () => {
     await submitNote();
-    showState('gacha-reveal');
   });
+
+  // skip sending animation btn
+  document.getElementById('skip-send-animation-btn').addEventListener('click', () => showState('ether-view'));
 
   // skip to ether without submitting
   document.getElementById('skip-link').addEventListener('click', (e) => {
@@ -275,13 +401,13 @@ document.addEventListener('DOMContentLoaded', () => {
     showState('ether-view');
   });
   
-
   // add another note
   document.getElementById('add-note-btn').addEventListener('click', () => showState('gate-view'));
 
-
   // close revealed note btn
   document.getElementById('close-reveal-btn').addEventListener('click', () => showState('ether-view'));
+
+
 
 
 
