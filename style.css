@@ -1,17 +1,31 @@
+*{
+  box-sizing: border-box;
+}
+
+@property --dot-scale {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0.3;
+}
+
+
 body {
     font-family: sans-serif;
-    max-width: 600px;
+    overflow-x: hidden;
     margin: 40px auto;
     padding: 0 20px;
     line-height: 1.6;
-    background-color: #f4f4f9;
+    background-color: #f5ebdc;
     color: #333;
   }
   
   .card {
-    background: white;
+    background: rgb(175, 23, 23);
     border: 1px solid #ddd;
+    max-width: 600px;
+    margin: 0px auto;
     padding: 20px;
+    margin: 0px auto;
     border-radius: 8px;
     margin-bottom: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
@@ -39,6 +53,8 @@ body {
   
   button {
     padding: 10px 20px;
+    margin-top: 15px;
+    margin-bottom: 15px;
     font-size: 16px;
     cursor: pointer;
     background-color: #4CAF50;
@@ -59,17 +75,43 @@ body {
   }
 
 
+  .centered-block {
+    width: 100%;
+    margin: 0px auto;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+
+  }
+
+  #field {
+    background-color: rgb(139, 202, 202);
+    margin-top: 15px;
+    margin-bottom: 30px;
+    flex-grow: 1;
+    min-height: 200px;
+    max-height: 400px;
+    position: relative;
+    border: 1px dashed gray;
+  }
+
 
 
 /* Oscillating between two points animation */
   @keyframes drift {
-    0%, 100% { transform: translate(0, 0) scale(0.3); }
-    50% { transform: translate(var(--dx), var(--dy)) scale(0.3); }
+    0%, 100% { transform: translate(0, 0) scale(var(--dot-scale)); }
+    50% { transform: translate(var(--dx), var(--dy)) scale(var(--dot-scale)); }
+  }
+
+  @keyframes bop {
+    0%, 100% { transform: translateY(0) scale(var(--dot-scale)); }
+    50% { transform: translateY(-20px) scale(calc(var(--dot-scale) * 1.15)); }
   }
   
   @keyframes drift-across {
-    from { transform: translateX(0) scale(0.3); }
-    to   { transform: translateX(var(--drift-distance)) scale(0.3); }
+    from { transform: translateX(0); }
+    to   { transform: translateX(calc(100vw + 150px)); }
   }
 
   @keyframes flip-frames {
@@ -79,11 +121,17 @@ body {
 
 
 
-  
+  .note-dot-wrapper {
+    --dot-scale: 0.3;
+    position: absolute;
+    left: -150px;
+    top: var(--top-pos);
+    animation: drift-across var(--duration) linear infinite;
+    transition: --dot-scale 0.2s ease;
+  }
   
   .note-dot {
     position: absolute;
-    left: -150px;
     top: var(--top-pos);
     width: 141px;
     height: 172px;
@@ -91,6 +139,11 @@ body {
     background-repeat: no-repeat;
     cursor: pointer;
     animation:
-      drift-across var(--duration) linear infinite,
+      bop var(--duration) ease-in-out infinite,
       flip-frames 0.9s steps(3) infinite;
+  }
+
+  .note-dot-wrapper:hover {
+    --dot-scale: 0.5;
+    animation-play-state: paused;
   }

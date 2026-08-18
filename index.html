@@ -41,18 +41,23 @@
   </div>
 
   <!-- STATE C: The Ether Field -->
-  <div id="ether-view" style="display: none;">
-    <div id="filters">
-      <input type="checkbox" id="show-my-notes-checkbox">
-      <label for="show-my-notes-checkbox">Show my notes.</label></br>
-      <label for="composer-filter-input">Filter by composer:</label>
-      <input type="text" id="composer-filter-input" list="composer-options" placeholder="e.g. Rachmaninoff" autocomplete="off" />
-      <datalist id="composer-options"></datalist>
-      <!-- <button id="clear-filter-btn">Clear filter</button> -->
+  <div id="ether-view" style="display: none; flex-direction: column; height: 100vh;">
+    <div class='centered-block'>
+      <h2>Catch a note!</h2>
     </div>
-    <p>this is the ether view.</p>
-    <div id="field" style="position: relative; height: 300px;"></div>
-    <button id="add-note-btn">Add another note</button>
+    <div id="field" style="position: relative;"></div>
+    <div class='centered-block' style='margin-top: auto;'>
+      <div id="filters">
+        <input type="checkbox" id="show-my-notes-checkbox">
+        <label for="show-my-notes-checkbox">Show my notes.</label></br>
+        <label for="composer-filter-input">Filter by composer:</label>
+        <input type="text" id="composer-filter-input" list="composer-options" placeholder="e.g. Rachmaninoff" autocomplete="off" />
+        <datalist id="composer-options"></datalist></br>
+        <!-- <button id="clear-filter-btn">Clear filter</button> -->
+        <button id="add-note-btn">Add another note</button>
+      </div>
+    </div>
+    
   </div>
 
   <!-- Reveal card overlay -->

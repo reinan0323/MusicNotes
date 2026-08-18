@@ -4,6 +4,7 @@ const supabaseKey = "sb_publishable_wLmrCX0JfUS2if7niX0w2g_woIYwLMz";
 const client = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 
+
 let currentSearchResults = [];
 let selectedPieceId = null;
 
@@ -14,6 +15,7 @@ let currentComposerResults = [];
 let filterComposer = null;
 
 let myNoteIds = [];
+
 
 
 
@@ -38,7 +40,15 @@ function showState(stateId) {
 }
 
 
-
+function playHoverSound() {
+  const HoverSounds = "abcdefg";
+  const randomHoverSound = HoverSounds[Math.floor(Math.random() * 7 + 1)];
+  const sound = new Audio(`audio/${randomHoverSound}.mp3`);
+  sound.volume = 0.3;
+  sound.play().catch(error => {
+    console.log("Browser blocked hover sound until user clicks somewhere")
+  });
+}
 
 
 // Debounce helper; only execute the latest input/event/call to a function
@@ -55,37 +65,45 @@ function debounce(func, delay = 300) {
 
 
 // Dots in the ether
-function renderField(count = 15) {
+function renderField(count = 25) {
   const fieldEl = document.getElementById('field');
-  const fieldWidth = fieldEl.offsetWidth;
   fieldEl.innerHTML = '';
 
   for (let i = 0; i < count; i++) {
+    // note-dot class controls animation for bopping
     const dot = document.createElement('div');
     dot.className = 'note-dot';
-    // dot.style.left = Math.random() * 90 + '%';
-    dot.style.top = Math.random() * 90 + '%';
-    
 
+    // note-dot-wrapper class controls animation for drift across
+    const dotWrapper = document.createElement('div');
+    dotWrapper.className = 'note-dot-wrapper';
+    
+    // randomly load a png
     const colors = ['red','orange','yellow','green','blue','purple','pink']
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
-    const musicNotation = 'quarter';
-    dot.style.backgroundImage = `url('assets/${randomColor}${musicNotation}.png')`;
+    const musicNotations = ['quarter','eighth']
+    const randomMusicNotation = musicNotations[Math.floor(Math.random() * musicNotations.length)]
 
-    dot.style.setProperty('--dx', (Math.random() * 200 - 100) + 'px');
-    dot.style.setProperty('--dy', (Math.random() * 200 - 100) + 'px');
-    dot.style.setProperty('--top-pos', Math.random() * 80 + '%');
-    dot.style.setProperty('--duration', (Math.random() * 6 + 30) + 's');
-    dot.style.setProperty('--drift-distance', (fieldWidth + 800) + 'px');
+    dot.style.backgroundImage = `url('assets/${randomColor}${randomMusicNotation}.png')`;
 
-    const duration = parseFloat(dot.style.getPropertyValue('--duration'));
-    dot.style.animationDelay = `-${Math.random() * duration}s`;
+    // each note will have a unique property to randomize animation
+    dot.style.setProperty('--duration', (Math.random() * 6 + 3) + 's'); /* how quickly dot bops up and down */
+    const durationA = parseFloat(dot.style.getPropertyValue('--duration'));
+    dot.style.animationDelay = `-${Math.random() * durationA}s`; /* when the bop starts to prevent all notes from bopping uniformly */
 
     
+    dotWrapper.style.setProperty('--top-pos', Math.random() * 70 + '%'); /* randomized vertical spawn position */
+    dotWrapper.style.setProperty('--duration', (Math.random() * 6 + 50) + 's'); /* randomized drift across speed */
 
+    const durationB = parseFloat(dotWrapper.style.getPropertyValue('--duration'));
+    dotWrapper.style.animationDelay = `-${Math.random() * durationB}s`;
+
+    
     dot.addEventListener('click', () => catchNote(dot));
+    dot.addEventListener('mouseover', playHoverSound);
 
-    fieldEl.appendChild(dot);
+    dotWrapper.appendChild(dot);
+    fieldEl.appendChild(dotWrapper);
   }
 }
 
@@ -383,7 +401,6 @@ document.addEventListener('DOMContentLoaded', () => {
   //   filterComposer = null;
   //   composerInput.value = '';
   // });
-
 
 
   // submit note btn (async/await because getRandomNote is called within submitNote; showState could show blank due to race conditions)
