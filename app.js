@@ -75,6 +75,10 @@ function renderField(count) {
     count = (Math.floor(area / 12000) < 25) ? 25 : Math.floor(area / 12000); // tune the divisor to taste
   }
   
+  if (document.getElementById('show-my-notes-checkbox').checked) {
+    count = myNoteIds.length;
+  }
+  
 
   for (let i = 0; i < count; i++) {
     // note-dot class controls animation for bopping
@@ -433,6 +437,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   window.addEventListener('resize', debounce(() => renderField(), 300));
+
+  document.getElementById('show-my-notes-checkbox').addEventListener('change', () => renderField());
 
 
 });
