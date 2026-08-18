@@ -22,20 +22,20 @@ let myNoteIds = [];
 // State swapping
 function showState(stateId) {
   const allStates = ['gate-view', 'sending-view','ether-view','gacha-reveal'];
-  if (stateId === 'ether-view'){
-    renderField();
-  }
+  
   // Loop through all the state/divs
   for (const id of allStates){
     const element = document.getElementById(id)
     // show only stateId div element, hide all others.
     if (id === stateId){
-      element.style.display = 'block';
+      element.style.display = (id === 'ether-view') ? 'flex' : 'block';
     } else {
       element.style.display = 'none';
     }
+  }
 
-
+  if (stateId === 'ether-view'){
+    renderField();
   }
 }
 
@@ -65,9 +65,16 @@ function debounce(func, delay = 300) {
 
 
 // Dots in the ether
-function renderField(count = 25) {
+function renderField(count) {
   const fieldEl = document.getElementById('field');
   fieldEl.innerHTML = '';
+
+  // determine count
+  if (!count) {
+    const area = fieldEl.offsetWidth * fieldEl.offsetHeight;
+    count = (Math.floor(area / 12000) < 25) ? 25 : Math.floor(area / 12000); // tune the divisor to taste
+  }
+  
 
   for (let i = 0; i < count; i++) {
     // note-dot class controls animation for bopping
@@ -92,7 +99,7 @@ function renderField(count = 25) {
     dot.style.animationDelay = `-${Math.random() * durationA}s`; /* when the bop starts to prevent all notes from bopping uniformly */
 
     
-    dotWrapper.style.setProperty('--top-pos', Math.random() * 70 + '%'); /* randomized vertical spawn position */
+    dotWrapper.style.setProperty('--top-pos', Math.random() * 90 + '%'); /* randomized vertical spawn position */
     dotWrapper.style.setProperty('--duration', (Math.random() * 6 + 50) + 's'); /* randomized drift across speed */
 
     const durationB = parseFloat(dotWrapper.style.getPropertyValue('--duration'));
@@ -425,7 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('close-reveal-btn').addEventListener('click', () => showState('ether-view'));
 
 
-
+  window.addEventListener('resize', debounce(() => renderField(), 300));
 
 
 });

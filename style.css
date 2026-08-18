@@ -8,12 +8,17 @@
   initial-value: 0.3;
 }
 
+html, body {
+  height: 100%;
+  margin: 0;
+}
 
 body {
+    display: flex;
+    flex-direction: column;
     font-family: sans-serif;
     overflow-x: hidden;
-    margin: 40px auto;
-    padding: 0 20px;
+    padding: 40px 20px;
     line-height: 1.6;
     background-color: #f5ebdc;
     color: #333;
@@ -74,6 +79,13 @@ body {
     display: none; /* Hidden until user submits */
   }
 
+  .vbox {
+    display:flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0px;
+  }
+
 
   .centered-block {
     width: 100%;
@@ -82,18 +94,14 @@ body {
     justify-content: center;
     align-items: center;
     display: flex;
-
   }
+
 
   #field {
     background-color: rgb(139, 202, 202);
-    margin-top: 15px;
-    margin-bottom: 30px;
-    flex-grow: 1;
+    flex: 1;
     min-height: 200px;
-    max-height: 400px;
     position: relative;
-    border: 1px dashed gray;
   }
 
 
@@ -132,7 +140,6 @@ body {
   
   .note-dot {
     position: absolute;
-    top: var(--top-pos);
     width: 141px;
     height: 172px;
     background-image: url('assets/redquarter.png');
