@@ -17,6 +17,10 @@ let filterComposer = null;
 let myNoteIds = [];
 
 
+let isDragging = false;
+let startPos = { x:0, y:0 };
+let currentPos = { x:0, y:0 };
+
 
 
 // State swapping
@@ -37,6 +41,10 @@ function showState(stateId) {
   if (stateId === 'ether-view'){
     renderField();
   }
+
+  // if (stateId === 'sending-view'){
+  //   setTimeout(()=> showState('ether-view'), 5000);
+  // }
 }
 
 
@@ -398,6 +406,43 @@ async function getRandomNote() {
 
 
 
+function launchNote(deltaX, deltaY, velocity) {
+  const noteSlingshot = document.getElementById('note-dot-slingshot');
+  
+  // Reset to center first
+  noteSlingshot.style.transform = `translate(0, 0)`;
+  
+  // Launch trajectory
+  let x = 0;
+  let y = 0;
+  let vx = -deltaX * 0.5; // scale velocity for distance
+  let vy = -deltaY * 0.5;
+  const friction = 0.92; // decay per frame
+  
+  function animate() {
+    x += vx;
+    y += vy;
+    vx *= friction;
+    vy *= friction;
+    
+    noteSlingshot.style.transform = `translate(${x}px, ${y}px)`;
+    // noteSlingshot.style.opacity = Math.max(0, 1 - (Math.abs(vx) + Math.abs(vy)) / 50);
+    
+    // Stop when velocity is negligible
+    if (Math.abs(vx) > 0.1 || Math.abs(vy) > 0.1) {
+      requestAnimationFrame(animate);
+    } else {
+      // Reset for next note
+      noteSlingshot.style.transform = `translate(0, 0)`;
+      noteSlingshot.style.opacity = 1;
+      // showState('gacha-reveal'); // Show the note they received
+    }
+  }
+  
+  animate();
+}
+
+
 
 
 
@@ -411,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const hasUnlocked = localStorage.getItem('etherUnlocked') === 'true';
 
   if (hasUnlocked) {
-    showState('ether-view');
+    showState('sending-view');
     myNoteIds = JSON.parse(localStorage.getItem('myNoteIds')) || [];
   } else {
     showState('gate-view');
@@ -444,10 +489,48 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-  // document.getElementById('clear-filter-btn').addEventListener('click', () => {
-  //   filterComposer = null;
-  //   composerInput.value = '';
-  // });
+  
+  // slingshot stuff
+  const noteSlingshotEl = document.getElementById('note-dot-slingshot');
+
+  // Prevent text selection during drag (prevents event listener conflicts during drag n drop)
+  noteSlingshotEl.style.userSelect = 'none';
+  noteSlingshotEl.style.pointerEvents = 'auto';
+  noteSlingshotEl.draggable = false; // Disable native drag
+
+
+  noteSlingshotEl.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    document.body.style.cursor = 'grabbing';
+    startPos = { x: e.clientX, y: e.clientY };
+
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+
+    currentPos = { x: e.clientX, y: e.clientY };
+
+    const offsetX = currentPos.x - startPos.x;
+    const offsetY = currentPos.y - startPos.y;
+    noteSlingshotEl.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+  });
+
+  // this entire mouseup section is vibecoded fyi because I'm not gonna do math...
+  document.addEventListener('mouseup', (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    document.body.style.cursor = 'auto';
+    
+    const deltaX = currentPos.x - startPos.x;
+    const deltaY = currentPos.y - startPos.y;
+
+    const velocity = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    const angle = Math.atan2(deltaY, deltaX);
+    
+    launchNote(deltaX, deltaY, velocity);
+  });
 
 
   
@@ -471,7 +554,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // close revealed note btn
   document.getElementById('close-reveal-btn').addEventListener('click', () => showState('ether-view'));
-
 
   window.addEventListener('resize', debounce(() => renderField(), 300));
 
