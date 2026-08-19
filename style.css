@@ -1,6 +1,6 @@
 *{
   box-sizing: border-box;
-  font-family: "Fredoka";
+  font-family: "Fredoka", sans-serif;
 }
 
 
@@ -21,7 +21,7 @@ body {
   }
   
   .card {
-    background: rgb(175, 23, 23);
+    background: rgb(235, 228, 210);
     border: 1px solid #ddd;
     max-width: 600px;
     margin: 0px auto;
@@ -126,6 +126,17 @@ body {
   }
 
 
+  .note-dot {
+    position: absolute;
+    width: 141px;
+    height: 172px;
+    background-image: url('assets/redquarter.png');
+    background-repeat: no-repeat;
+    cursor: pointer;
+    animation:
+      bop var(--duration) ease-in-out infinite,
+      flip-frames 0.9s steps(3) infinite;
+  }
 
   .note-dot-wrapper {
     --dot-scale: 0.3;
@@ -142,20 +153,25 @@ body {
   .note-dot-wrapper.is-drifting-local {
     animation: drift var(--duration) ease-in-out infinite;
   }
-  
-  .note-dot {
-    position: absolute;
-    width: 141px;
-    height: 172px;
-    background-image: url('assets/redquarter.png');
-    background-repeat: no-repeat;
-    cursor: pointer;
-    animation:
-      bop var(--duration) ease-in-out infinite,
-      flip-frames 0.9s steps(3) infinite;
-  }
 
   .note-dot-wrapper:hover {
     --dot-scale: 0.5;
     animation-play-state: paused;
   }
+
+
+  .note-dot-slingshot {
+    scale: 0.3;
+    position: absolute;
+    width: 141px;
+    height: 172px;
+    background-image: url('redeighth.png');
+    background-repeat: no-repeat;
+    cursor: grab;
+    animation: flip-frames 0.9 steps(3) infinite;
+  }
+
+  /* .note-dot-slingshot.is-dragging {
+    scale: 0.25;
+    cursor: grabbing;
+  } */
