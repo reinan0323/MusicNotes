@@ -65,19 +65,28 @@ function debounce(func, delay = 300) {
 
 
 // Dots in the ether
-function renderField(count) {
+async function renderField() {
   const fieldEl = document.getElementById('field');
   fieldEl.innerHTML = '';
-
-  // determine count
-  if (!count) {
-    const area = fieldEl.offsetWidth * fieldEl.offsetHeight;
-    count = (Math.floor(area / 12000) < 25) ? 25 : Math.floor(area / 12000); // tune the divisor to taste
-  }
+  const area = fieldEl.offsetWidth * fieldEl.offsetHeight;
+  let count = (Math.floor(area / 12000) < 25) ? 25 : Math.floor(area / 12000); // tune the divisor to taste
   
+ 
+  // exceptions: determine count
   if (document.getElementById('show-my-notes-checkbox').checked) {
     count = myNoteIds.length;
   }
+
+  if (filterComposer) {
+    count = await getNotesCount();
+  }
+
+  // if (!count) {
+  //   const area = fieldEl.offsetWidth * fieldEl.offsetHeight;
+  //   count = (Math.floor(area / 12000) < 25) ? 25 : Math.floor(area / 12000); // tune the divisor to taste
+  // }
+
+
   
 
   for (let i = 0; i < count; i++) {
@@ -95,7 +104,7 @@ function renderField(count) {
     const musicNotations = ['quarter','eighth']
     const randomMusicNotation = musicNotations[Math.floor(Math.random() * musicNotations.length)]
 
-    dot.style.backgroundImage = `url('assets/${randomColor}${randomMusicNotation}.png')`;
+    dot.style.backgroundImage = `url('redeighth.png')`;
 
     // each note will have a unique property to randomize animation
     dot.style.setProperty('--duration', (Math.random() * 6 + 3) + 's'); /* how quickly dot bops up and down */
@@ -111,7 +120,7 @@ function renderField(count) {
 
     
     dot.addEventListener('click', () => catchNote(dot));
-    dot.addEventListener('mouseover', playHoverSound);
+    // dot.addEventListener('mouseover', playHoverSound);
 
     dotWrapper.appendChild(dot);
     fieldEl.appendChild(dotWrapper);
@@ -124,8 +133,11 @@ async function catchNote(dotElement) {
   const found = await getRandomNote();
   if (found){
     showState('gacha-reveal');
-  } else{
-    alert("You've caught every note in the ether right now; come back later or add one yourself.");
+  } else if (filterComposer || document.getElementById('show-my-notes-checkbox').checked) {
+      excludedIds = [];
+      catchNote(dotElement);
+  } else {
+      alert("You've caught every note in the ether right now; come back later or add one yourself.");
   }
   
 }
@@ -321,7 +333,16 @@ function checkComposerMatch(inputValue){
 }
 
 
-
+async function getNotesCount(){
+  const { data: data, error } = await client.rpc('get_notes_count', {
+    filter_composer: filterComposer
+  });
+  if (error || data === null) {
+    console.error('Error getting notes count:', error);
+    return false;
+  }
+  return data;
+}
 
 
 
@@ -400,7 +421,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const composerInput = document.getElementById('composer-filter-input');
   const debouncedComposerSearch = debounce((e) => searchComposers(e.target.value), 300);
   composerInput.addEventListener('input', debouncedComposerSearch);
-  composerInput.addEventListener('change', (e) => checkComposerMatch(e.target.value));
+  composerInput.addEventListener('change', async (e) => {
+    checkComposerMatch(e.target.value);
+    renderField();
+  });
 
   composerInput.addEventListener('blur', () => {
   checkComposerMatch(composerInput.value);
@@ -408,12 +432,14 @@ document.addEventListener('DOMContentLoaded', () => {
     composerInput.value = '';
   }
 });
+
   // document.getElementById('clear-filter-btn').addEventListener('click', () => {
   //   filterComposer = null;
   //   composerInput.value = '';
   // });
 
 
+  
   // submit note btn (async/await because getRandomNote is called within submitNote; showState could show blank due to race conditions)
   document.getElementById('submit-btn').addEventListener('click', async () => {
     await submitNote();
