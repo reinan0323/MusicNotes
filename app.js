@@ -69,7 +69,7 @@ async function renderField() {
   const fieldEl = document.getElementById('field');
   fieldEl.innerHTML = '';
   const area = fieldEl.offsetWidth * fieldEl.offsetHeight;
-  let count = (Math.floor(area / 12000) < 25) ? 25 : Math.floor(area / 12000); // tune the divisor to taste
+  let count = (Math.floor(area / 12000) > 25) ? 25 : Math.floor(area / 12000); // tune the divisor to taste
   
  
   // exceptions: determine count
@@ -79,14 +79,8 @@ async function renderField() {
 
   if (filterComposer) {
     count = await getNotesCount();
+    count = (count > 25) ? 25 : count;
   }
-
-  // if (!count) {
-  //   const area = fieldEl.offsetWidth * fieldEl.offsetHeight;
-  //   count = (Math.floor(area / 12000) < 25) ? 25 : Math.floor(area / 12000); // tune the divisor to taste
-  // }
-
-
   
 
   for (let i = 0; i < count; i++) {
@@ -111,12 +105,29 @@ async function renderField() {
     const durationA = parseFloat(dot.style.getPropertyValue('--duration'));
     dot.style.animationDelay = `-${Math.random() * durationA}s`; /* when the bop starts to prevent all notes from bopping uniformly */
 
-    
-    dotWrapper.style.setProperty('--top-pos', Math.random() * 90 + '%'); /* randomized vertical spawn position */
-    dotWrapper.style.setProperty('--duration', (Math.random() * 6 + 50) + 's'); /* randomized drift across speed */
+    if (count > 10) {
+      dotWrapper.classList.add('is-drifting-across');
+      dotWrapper.classList.remove('is-drifting-local');
 
-    const durationB = parseFloat(dotWrapper.style.getPropertyValue('--duration'));
-    dotWrapper.style.animationDelay = `-${Math.random() * durationB}s`;
+      dotWrapper.style.setProperty('--top-pos', Math.random() * 90 + '%'); /* randomized vertical spawn position */
+      dotWrapper.style.setProperty('--duration', (Math.random() * 6 + 50) + 's'); /* randomized drift across speed */
+
+      const durationB = parseFloat(dotWrapper.style.getPropertyValue('--duration'));
+      dotWrapper.style.animationDelay = `-${Math.random() * durationB}s`;
+    } else {
+      dotWrapper.classList.add('is-drifting-local');
+      dotWrapper.classList.remove('is-drifting-across');
+
+      dotWrapper.style.animationDelay = '0s';
+
+      dotWrapper.style.left = Math.random() * 90 + '%';
+      dotWrapper.style.top = Math.random() * 90 + '%';
+
+      dotWrapper.style.setProperty('--dx', (Math.random() * 40 + 20) + 'px');
+      dotWrapper.style.setProperty('--dy', (Math.random() * 40 - 20) + 'px');
+      dotWrapper.style.setProperty('--duration', (Math.random() * 6 + 8) + 's');
+    }
+
 
     
     dot.addEventListener('click', () => catchNote(dot));
