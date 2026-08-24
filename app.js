@@ -35,6 +35,7 @@ function showState(stateId) {
       element.style.display = (id === 'ether-view') ? 'flex' : 'block';
     } else {
       element.style.display = 'none';
+      console.log('none is' + id);
     }
   }
 
@@ -150,6 +151,17 @@ async function catchNote(dotElement) {
   console.log('caught a dot!', dotElement);
   // real fetch-and-reveal logic comes next
   const found = await getRandomNote();
+
+  const caughtFromWho = document.getElementById('you-caught-a-note');
+
+  if (document.getElementById('show-my-notes-checkbox').checked){
+    
+    caughtFromWho.textContent = 'A Note From Yourself';
+  } else {
+    caughtFromWho.textContent = 'You Caught a Note from a Stranger';
+  }
+
+
   if (found){
     showState('gacha-reveal');
   } else if (filterComposer || document.getElementById('show-my-notes-checkbox').checked) {
@@ -418,6 +430,17 @@ function launchNote(deltaX, deltaY, velocity) {
   let vx = -deltaX * 0.5; // scale velocity for distance
   let vy = -deltaY * 0.5;
   const friction = 0.92; // decay per frame
+  let isOffScreen = false;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) {
+        isOffScreen = true;
+      }
+    });
+  });
+
+  observer.observe(noteSlingshot);
   
   function animate() {
     x += vx;
@@ -425,17 +448,23 @@ function launchNote(deltaX, deltaY, velocity) {
     vx *= friction;
     vy *= friction;
     
-    noteSlingshot.style.transform = `translate(${x}px, ${y}px)`;
-    // noteSlingshot.style.opacity = Math.max(0, 1 - (Math.abs(vx) + Math.abs(vy)) / 50);
-    
-    // Stop when velocity is negligible
-    if (Math.abs(vx) > 0.1 || Math.abs(vy) > 0.1) {
+    noteSlingshot.style.transform = `translate(${x}px, ${y}px)`;      
+
+      // Intersection Observer API
+
+
+    if (Math.abs(vx) > 0.1 || Math.abs(vy) > 0.1 && !isOffScreen) {
       requestAnimationFrame(animate);
+    } else if (isOffScreen) {
+        // Only show reveal if actually off-screen
+        observer.unobserve(noteSlingshot);
+        noteSlingshot.style.opacity = 1;
+        showState('ether-view');
     } else {
-      // Reset for next note
-      noteSlingshot.style.transform = `translate(0, 0)`;
-      noteSlingshot.style.opacity = 1;
-      // showState('gacha-reveal'); // Show the note they received
+        // Velocity died but didn't leave screen, just snap back
+        observer.unobserve(noteSlingshot);
+        noteSlingshot.style.transform = `translate(0, 0)`;
+        noteSlingshot.style.opacity = 1;
     }
   }
   
