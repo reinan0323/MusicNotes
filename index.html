@@ -28,7 +28,7 @@
   <!-- STATE A: Gate View -->
 
   <div id="gate-view" class="card">
-    <h2>1. Send a Note into the Ether</h2>
+    <h2>Send a Note into the Ether</h2>
     <label for="piece-input">Search for your favorite piece of music:</label>
     <input type="text" id="piece-input" list="piece-options" placeholder="Search composer or piece..." autocomplete="off" />
     <datalist id="piece-options"></datalist>
@@ -71,9 +71,9 @@
 
   <!-- Reveal card overlay -->
   <div id="gacha-reveal" class="card" style="display: none;">
-    <h2>2. You Caught a Note from a Stranger!</h2>
+    <h2 id="you-caught-a-note">You Caught a Note from a Stranger!</h2>
     <p><strong>Music Piece:</strong> <span id="received-piece">...</span></p>
-    <p><strong>Their Note:</strong></p>
+    <p><strong>Note:</strong></p>
     <blockquote id="received-text">"..."</blockquote>
     <button id="close-reveal-btn">Back to the ether</button>
 
