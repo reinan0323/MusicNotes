@@ -25,7 +25,7 @@ let currentPos = { x:0, y:0 };
 
 // State swapping
 function showState(stateId) {
-  const allStates = ['gate-view', 'sending-view','ether-view','gacha-reveal'];
+  const allStates = ['gate-view', 'sending-view','ether-view','receiving-view','gacha-reveal'];
   
   // Loop through all the state/divs
   for (const id of allStates){
@@ -43,9 +43,9 @@ function showState(stateId) {
     renderField();
   }
 
-  // if (stateId === 'sending-view'){
-  //   setTimeout(()=> showState('ether-view'), 5000);
-  // }
+  if (stateId === 'receiving-view'){
+    setTimeout(()=> showState('gacha-reveal'), 2000);
+  }
 }
 
 
@@ -149,7 +149,7 @@ async function renderField() {
 
 async function catchNote(dotElement) {
   console.log('caught a dot!', dotElement);
-  // real fetch-and-reveal logic comes next
+
   const found = await getRandomNote();
 
   const caughtFromWho = document.getElementById('you-caught-a-note');
@@ -163,7 +163,7 @@ async function catchNote(dotElement) {
 
 
   if (found){
-    showState('gacha-reveal');
+    showState('receiving-view');
   } else if (filterComposer || document.getElementById('show-my-notes-checkbox').checked) {
       excludedIds = [];
       catchNote(dotElement);
@@ -448,11 +448,11 @@ function launchNote(deltaX, deltaY, velocity) {
     vx *= friction;
     vy *= friction;
     
-    noteSlingshot.style.transform = `translate(${x}px, ${y}px)`;      
+    noteSlingshot.style.transform = `translate(${x}px, ${y}px)`;    
+     
 
-      // Intersection Observer API
 
-
+    // Intersection Observer API
     if (Math.abs(vx) > 0.1 || Math.abs(vy) > 0.1 && !isOffScreen) {
       requestAnimationFrame(animate);
     } else if (isOffScreen) {
@@ -543,6 +543,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const offsetX = currentPos.x - startPos.x;
     const offsetY = currentPos.y - startPos.y;
     noteSlingshotEl.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+
+    noteSlingshotEl.style.scale = ( 0.3 < 0.3 / (Math.sqrt((offsetX ** 2) + (offsetY ** 2))/100)) ? 0.3 :  0.3 / (Math.sqrt((offsetX ** 2) + (offsetY ** 2))/100);
   });
 
   // this entire mouseup section is vibecoded fyi because I'm not gonna do math...
@@ -550,6 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isDragging) return;
     isDragging = false;
     document.body.style.cursor = 'auto';
+    noteSlingshotEl.style.scale = 0.3;
     
     const deltaX = currentPos.x - startPos.x;
     const deltaY = currentPos.y - startPos.y;
@@ -557,6 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const velocity = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     const angle = Math.atan2(deltaY, deltaX);
+
     
     launchNote(deltaX, deltaY, velocity);
   });
