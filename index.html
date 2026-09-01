@@ -29,24 +29,29 @@
 
   <div id="gate-view" class="card">
     <h2>Send a Note into the Ether</h2>
-    <label for="piece-input">Search for your favorite piece of music:</label>
-    <input type="text" id="piece-input" list="piece-options" placeholder="Search composer or piece..." autocomplete="off" />
-    <datalist id="piece-options"></datalist>
+    <label for="piece-input">Choose your favorite piece of music:</label>
+    <input type="text" id="piece-input" list="piece-options" placeholder="Search a composer or piece..." autocomplete="off" style="width: 100%"/>
+    <datalist id="piece-options"></datalist><br>
+
+    <!-- <p id="prompt-flash">I remember listening to this when...</p><br> -->
 
     <label for="note-text">Share a memory or feeling associated with it:</label>
     <textarea id="note-text" placeholder="I remember listening to this when..."></textarea>
 
-    <button id="submit-btn">Send into Ether & Receive a Note</button>
+    <button id="submit-btn">Send Your Note</button>
     
     <p><a href="#" id="skip-link">Just want to read? Enter without sending a note.</a></p>
 
   </div>
 
   <!-- STATE B: Sending Animation -->
-  <div id="sending-view" class="card" style="display: none;">
-    <p>Sending your note into the ether...</p>
-    <div id="note-dot-slingshot" class="note-dot-slingshot"></div>
-    <button id="skip-send-animation-btn">Skip Animation</button>
+  <div id="sending-view" class="vbox" style="display: none;">
+    <div class='centered-block' style="margin-bottom: 5%;">
+      <h2>Send your note into the ether...</h2>
+      <p>Drag and release to launch!</p>
+      <div id="note-dot-slingshot" class="note-dot-slingshot"></div>
+      <button id="skip-send-animation-btn">Skip Animation</button>
+    </div>
   </div>
 
   <!-- STATE C: The Ether Field -->
@@ -58,10 +63,10 @@
     <div class='centered-block' style="margin-top: 10%;">
       <div id="filters" style="padding: 30px;">
         <input type="checkbox" id="show-my-notes-checkbox">
-        <label for="show-my-notes-checkbox">Show my notes.</label></br>
+        <label for="show-my-notes-checkbox">Show my notes.</label><br>
         <label for="composer-filter-input">Filter by composer:</label>
         <input type="text" id="composer-filter-input" list="composer-options" placeholder="e.g. Rachmaninoff" autocomplete="off" />
-        <datalist id="composer-options"></datalist></br>
+        <datalist id="composer-options"></datalist><br>
         <!-- <button id="clear-filter-btn">Clear filter</button> -->
         <button id="add-note-btn">Add another note</button>
       </div>
@@ -71,7 +76,7 @@
 
   <!-- STATE D: Receiving Animation -->
   <div id="receiving-view" class="card" style="display: none;">
-    <div class="centered-block">
+    <div class="centered-block" style="flex-direction: column;">
       <h2>Opening note...</h2>
     </div>
   </div>
