@@ -21,6 +21,7 @@ body {
   }
   
   .card {
+    position: relative;
     background: rgb(235, 228, 210);
     border: 1px solid #ddd;
     max-width: 600px;
@@ -41,6 +42,7 @@ body {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    resize: none;
   }
   
   select {
@@ -92,6 +94,7 @@ body {
     justify-content: center;
     align-items: center;
     display: flex;
+    flex-direction: column;
   }
 
 
@@ -162,16 +165,12 @@ body {
 
   .note-dot-slingshot {
     scale: 0.3;
-    position: absolute;
+    top: 50%;
+    left: 50%;
     width: 141px;
     height: 172px;
     background-image: url('redeighth.png');
     background-repeat: no-repeat;
     cursor: grab;
-    animation: flip-frames 0.9 steps(3) infinite;
+    animation: flip-frames 0.9s steps(3) infinite;
   }
-
-  /* .note-dot-slingshot.is-dragging {
-    scale: 0.25;
-    cursor: grabbing;
-  } */
