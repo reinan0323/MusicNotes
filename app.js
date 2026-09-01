@@ -39,6 +39,13 @@ function showState(stateId) {
     }
   }
 
+  if (stateId === 'gate-view'){
+    flashPrompts();
+  } else if (promptInterval){
+    clearInterval(promptInterval);
+    promptInterval = null;
+  }
+
   if (stateId === 'ether-view'){
     renderField();
   }
@@ -171,6 +178,38 @@ async function catchNote(dotElement) {
       alert("You've caught every note in the ether right now; come back later or add one yourself.");
   }
   
+}
+
+
+let promptInterval = null;
+
+function flashPrompts() {
+  const prompts = [
+    'The first time I listened to this piece was...',
+    'This is my favorite piece because...',
+    'This piece reminds me of...',
+    'My favorite recording of this piece is...',
+    'This makes me feel...',
+    'I associate this music with a time when I...',
+    'I remember listening to this when...'
+  ]
+
+  const promptEl = document.getElementById('note-text');
+
+  if (promptInterval) {clearInterval(promptInterval)};
+
+  let promptIdx = 0;
+
+  promptInterval = setInterval(()=>{
+    if (promptIdx < prompts.length) {
+      promptEl.placeholder = prompts[promptIdx];
+      promptIdx += 1;
+    } else {
+      promptIdx = 0;
+    }
+
+    // promptEl.textContent = prompts[Math.floor(Math.random() * prompts.length)]
+  }, 5000);
 }
 
 
