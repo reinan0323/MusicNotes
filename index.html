@@ -27,21 +27,22 @@
 
   <!-- STATE A: Gate View -->
 
-  <div id="gate-view" class="card">
-    <h2>Send a Note into the Ether</h2>
-    <label for="piece-input">Choose your favorite piece of music:</label>
+  <div id="gate-view" class="centered-block">
+    <h2>Send a Music Note</h2>
+    <div class="card" style="text-align: left; align-items: left; justify-content: left;">
+    <label for="piece-input">Your favorite piece of music:</label>
     <input type="text" id="piece-input" list="piece-options" placeholder="Search a composer or piece..." autocomplete="off" style="width: 100%"/>
     <datalist id="piece-options"></datalist><br>
 
     <!-- <p id="prompt-flash">I remember listening to this when...</p><br> -->
-
+    <hr>
     <label for="note-text">Share a memory or feeling associated with it:</label>
     <textarea id="note-text" placeholder="I remember listening to this when..."></textarea>
 
-    <button id="submit-btn">Send Your Note</button>
+    <button id="submit-btn">Ready!</button>
     
-    <p><a href="#" id="skip-link">Just want to read? Enter without sending a note.</a></p>
-
+    <p><a href="#" id="skip-link">Just want to read others' notes? Proceed here.</a></p>
+    </div>
   </div>
 
   <!-- STATE B: Sending Animation -->
@@ -56,11 +57,11 @@
 
   <!-- STATE C: The Ether Field -->
   <div id="ether-view" class="vbox">
-    <div class='centered-block' style="margin-bottom: 5%;">
+    <div class='centered-block'>
       <h2>Catch a note!</h2>
     </div>
     <div id="field"></div>
-    <div class='centered-block' style="margin-top: 10%;">
+    <div class='centered-block'>
       <div id="filters" style="padding: 30px;">
         <input type="checkbox" id="show-my-notes-checkbox">
         <label for="show-my-notes-checkbox">Show my notes.</label><br>
@@ -68,7 +69,7 @@
         <input type="text" id="composer-filter-input" list="composer-options" placeholder="e.g. Rachmaninoff" autocomplete="off" />
         <datalist id="composer-options"></datalist><br>
         <!-- <button id="clear-filter-btn">Clear filter</button> -->
-        <button id="add-note-btn">Add another note</button>
+        <button class="add-note-btn">Add Another Note</button>
       </div>
     </div>
     
@@ -82,13 +83,17 @@
   </div>
 
   <!-- Reveal card overlay -->
-  <div id="gacha-reveal" class="card" style="display: none;">
+  <div id="gacha-reveal" class="card popup" style="display: none;">
     <h2 id="you-caught-a-note">You Caught a Note from a Stranger!</h2>
     <p><strong>Music Piece:</strong> <span id="received-piece">...</span></p>
     <p><strong>Note:</strong></p>
     <blockquote id="received-text">"..."</blockquote>
-    <button id="close-reveal-btn">Back to the ether</button>
+    <button id="close-reveal-btn">Back to the Ether</button>
+    <button class="add-note-btn">Add Your Own Note</button>
+  </div>
 
+  <!-- Mouse stop filter half-transluscent backdrop -->
+  <div id="mouse-stop-backdrop" class="backdrop" style="display: none;">
   </div>
 
 </body>
