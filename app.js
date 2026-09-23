@@ -25,7 +25,7 @@ let currentPos = { x:0, y:0 };
 
 // State swapping
 function showState(stateId) {
-  const allStates = ['gate-view', 'sending-view','ether-view','receiving-view','gacha-reveal'];
+  const allStates = ['gate-view', 'sending-view','ether-view','receiving-view','gacha-reveal','mouse-stop-backdrop'];
   
   // Loop through all the state/divs
   for (const id of allStates){
@@ -52,6 +52,11 @@ function showState(stateId) {
 
   if (stateId === 'receiving-view'){
     setTimeout(()=> showState('gacha-reveal'), 2000);
+  }
+
+  if (stateId === 'gacha-reveal'){
+    document.getElementById('mouse-stop-backdrop').style.display = 'flex';
+    document.getElementById('ether-view').style.display = 'flex';
   }
 }
 
@@ -84,11 +89,21 @@ function debounce(func, delay = 300) {
 async function renderField() {
   const fieldEl = document.getElementById('field');
   fieldEl.innerHTML = '';
-  const area = fieldEl.offsetWidth * fieldEl.offsetHeight;
+  const fieldW = fieldEl.offsetWidth;
+  const fieldH = fieldEl.offsetHeight;
+  const area = fieldW * fieldH;
+
   let count = (Math.floor(area / 12000) > 25) ? 25 : Math.floor(area / 12000); // tune the divisor to taste
   
+  // adjust for dot's scaled size
+  const dotW = 141;
+  const dotH = 172;
+
+  // determines percentage of field (from 0,0) that a dot can be placed so that the entire dot isn't cut off
+  const maxLeftPct = Math.max(0, 100 - (dotW / fieldW) * 100);
+  const maxTopPct  = Math.max(0, 100 - (dotH / fieldH) * 100);
  
-  // exceptions: determine count
+  // exceptions: determine unique count
   if (document.getElementById('show-my-notes-checkbox').checked) {
     count = myNoteIds.length;
   }
@@ -116,32 +131,32 @@ async function renderField() {
 
     dot.style.backgroundImage = `url('redeighth.png')`;
 
-    // each note will have a unique property to randomize animation
+    // each note will have a unique property to randomize bopping animation
     dot.style.setProperty('--duration', (Math.random() * 6 + 3) + 's'); /* how quickly dot bops up and down */
     const durationA = parseFloat(dot.style.getPropertyValue('--duration'));
     dot.style.animationDelay = `-${Math.random() * durationA}s`; /* when the bop starts to prevent all notes from bopping uniformly */
 
-    if (count > 10) {
+    if (count > 10) { //dot drifts across the screen
       dotWrapper.classList.add('is-drifting-across');
       dotWrapper.classList.remove('is-drifting-local');
 
-      dotWrapper.style.setProperty('--top-pos', Math.random() * 90 + '%'); /* randomized vertical spawn position */
+      dotWrapper.style.setProperty('--top-pos', Math.random() * maxTopPct + '%'); /* randomized vertical spawn position */
       dotWrapper.style.setProperty('--duration', (Math.random() * 6 + 50) + 's'); /* randomized drift across speed */
 
       const durationB = parseFloat(dotWrapper.style.getPropertyValue('--duration'));
       dotWrapper.style.animationDelay = `-${Math.random() * durationB}s`;
-    } else {
-      dotWrapper.classList.add('is-drifting-local');
+    } else { //keep static
+      // dotWrapper.classList.add('is-drifting-local');
       dotWrapper.classList.remove('is-drifting-across');
 
-      dotWrapper.style.animationDelay = '0s';
+      // dotWrapper.style.animationDelay = '0s';
 
-      dotWrapper.style.left = Math.random() * 90 + '%';
-      dotWrapper.style.top = Math.random() * 90 + '%';
+      dotWrapper.style.left = Math.random() * maxLeftPct + '%';
+      dotWrapper.style.top = Math.random() * maxTopPct + '%';
 
-      dotWrapper.style.setProperty('--dx', (Math.random() * 40 + 20) + 'px');
-      dotWrapper.style.setProperty('--dy', (Math.random() * 40 - 20) + 'px');
-      dotWrapper.style.setProperty('--duration', (Math.random() * 6 + 8) + 's');
+      // dotWrapper.style.setProperty('--dx', (Math.random() * 40 + 20) + 'px');
+      // dotWrapper.style.setProperty('--dy', (Math.random() * 40 - 20) + 'px');
+      // dotWrapper.style.setProperty('--duration', (Math.random() * 6 + 8) + 's');
     }
 
 
@@ -170,7 +185,7 @@ async function catchNote(dotElement) {
 
 
   if (found){
-    showState('receiving-view');
+    showState('gacha-reveal');
   } else if (filterComposer || document.getElementById('show-my-notes-checkbox').checked) {
       excludedIds = [];
       catchNote(dotElement);
@@ -189,7 +204,7 @@ function flashPrompts() {
     'This is my favorite piece because...',
     'This piece reminds me of...',
     'My favorite recording of this piece is...',
-    'This makes me feel...',
+    'This piece makes me feel...',
     'I associate this music with a time when I...',
     'I remember listening to this when...'
   ]
@@ -524,7 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const hasUnlocked = localStorage.getItem('etherUnlocked') === 'true';
 
   if (hasUnlocked) {
-    showState('sending-view');
+    showState('ether-view');
     myNoteIds = JSON.parse(localStorage.getItem('myNoteIds')) || [];
   } else {
     showState('gate-view');
@@ -622,7 +637,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   // add another note
-  document.getElementById('add-note-btn').addEventListener('click', () => showState('gate-view'));
+  document.querySelectorAll('.add-note-btn').forEach(button => {
+    button.addEventListener('click', () => showState('gate-view'));
+  });
 
   // close revealed note btn
   document.getElementById('close-reveal-btn').addEventListener('click', () => showState('ether-view'));
