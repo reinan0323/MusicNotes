@@ -18,11 +18,11 @@ body {
     overflow-x: hidden;
     padding: 40px 20px;
     line-height: 1.6;
-    background-color: #f5ebdc;
+    background-color: #d9e8e7;
     color: #333;
   }
   
-  .card {
+  /* .card {
     position: relative;
     background: rgb(235, 228, 210);
     border: 1px solid #ddd;
@@ -34,6 +34,23 @@ body {
     margin-bottom: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     z-index: 1;
+  } */
+
+    .card {
+    position: fixed;
+    background: rgb(235, 228, 210);
+    border: 1px solid #ddd;
+    max-width: 600px;
+    margin: 0px auto;
+    padding: 20px;
+    margin: 0px auto;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
   }
 
   .popup {
@@ -161,6 +178,7 @@ body {
     position: absolute;
     width: 141px;
     height: 172px;
+    /* background-image: url('redquarter.png'); */
     background-image: url('assets/redquarter.png');
     background-repeat: no-repeat;
     cursor: pointer;
@@ -197,8 +215,13 @@ body {
     left: 50%;
     width: 141px;
     height: 172px;
-    background-image: url('redeighth.png');
+    /* background-image: url('redeighth.png'); */
+    background-image: url('assets/redeighth.png');
     background-repeat: no-repeat;
     cursor: grab;
     animation: flip-frames 0.9s steps(3) infinite;
+  }
+
+  .note-dot-slingshot:hover {
+    scale: 0.5;
   }

@@ -129,7 +129,8 @@ async function renderField() {
     const musicNotations = ['quarter','eighth']
     const randomMusicNotation = musicNotations[Math.floor(Math.random() * musicNotations.length)]
 
-    dot.style.backgroundImage = `url('redeighth.png')`;
+    // dot.style.backgroundImage = `url('redeighth.png')`;
+    dot.style.backgroundImage = `url('assets/${randomColor}${randomMusicNotation}.png')`;
 
     // each note will have a unique property to randomize bopping animation
     dot.style.setProperty('--duration', (Math.random() * 6 + 3) + 's'); /* how quickly dot bops up and down */
@@ -545,7 +546,11 @@ document.addEventListener('DOMContentLoaded', () => {
     showState('gate-view');
   }
 
-
+  const backdropElement = document.getElementById('mouse-stop-backdrop');
+  backdropElement.addEventListener('click', () => {
+    backdropElement.style.display = 'none';
+    document.getElementById('gacha-reveal').style.display = 'none';
+  })
 
   // Gate view piece search user input
   const inputElement = document.getElementById('piece-input');
